@@ -1,11 +1,24 @@
-# from tika import parser
-# file = './FACTURI/fact2.pdf'
-# file_data = parser.from_file(file)
-# text = file_data['content']
-# print(text)
-
+from datetime import datetime
+from datetime import date
+from os import listdir
+import os
+from os.path import isfile, join
+import requests
 import json
 import pdfplumber
+import time
+
+
+def getCurrentTime():
+    now = datetime.now()
+    current_time = now.strftime("%H:%M:%S")
+    today = date.today()
+    current_date = today.strftime("%d.%m.%Y")
+
+
+    current_date_time = current_time + ' ' + current_date
+
+    return current_date_time
 
 def getData(path):
     with pdfplumber.open(path) as pdf:
@@ -44,17 +57,31 @@ def getData(path):
 
         return data
 
-path = './FACTURI/fact3.pdf'
-
-
-import requests
-
-url = 'http://localhost:5000/api'
-data = {'data': getData(path), 'token' : 'admin'}
+url = 'https://aroti-backend.herokuapp.com/api'
 headers = {'Content-Type': 'application/json'}
+path = './FACTURI/'
+destination_path = './FACTURI_PROCESATE/'
 
-r = requests.post(url, data=json.dumps(data), headers=headers)
 
-print(r.text)
+while True:
+    files = [f for f in listdir(path) if isfile(join(path, f))]
+
+    for file in files:
+        file_path = path + file
+        data = {'data': getData(file_path), 'token' : 'admin'}
+        r = requests.post(url, data=json.dumps(data), headers=headers)
+        print(r.text)
+
+        time.sleep(10)
+        time_str = getCurrentTime()
+        os.replace(file_path, destination_path + time_str + '.pdf')
+    
+    time.sleep(60)
+
+
+
+
+
+
 
 
