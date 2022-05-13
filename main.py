@@ -44,6 +44,8 @@ def getData(path):
                 nr_prod = line[buc_index + len(buc_text) + 1:].split(' ')[0]
                 words = line.split(' ')
                 
+                words = [words[i] for i in range(0, len(words) - 1) if words[i + 1] != "Buc"]
+                words = [word for word in words if word != '']
                 id = words[0]
                 code = words[1]
                 color = words[2]
@@ -53,7 +55,19 @@ def getData(path):
                 if color.upper() == 'NGR':
                     color = 'NEGRU'
                 
-                data.append((id, code, color, size, int(float(nr_prod.replace(',', '.')))))
+                if len(words) != 9 or not color.isalpha():
+                    output = ""
+                    i = 0
+                    while words[i] != "Buc" and i < len(words):
+                        output = output + words[i] + " "
+                        i = i + 1
+                    output = output + "Buc: " + words[i + 1]
+
+                    print(output)
+                else:
+                    data.append((id, code, color, size, 0))
+                
+                #data.append((id, code, color, size, int(float(nr_prod.replace(',', '.')))))
 
         return data
 
@@ -70,8 +84,10 @@ while True:
         file_path = path + file
         data = {'data': getData(file_path), 'token' : 'admin'}
         r = requests.post(url, data=json.dumps(data), headers=headers)
-        print(r.text)
-
+        if r.status_code != 200:
+            print("Eroare de procesare, contactati-ma!")
+        else:
+            print("Factura trimisa cu succes!")
         time.sleep(10)
         time_str = getCurrentTime()
         os.replace(file_path, destination_path + time_str + '.pdf')
