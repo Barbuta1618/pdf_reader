@@ -81,13 +81,15 @@ while True:
     files = [f for f in listdir(path) if isfile(join(path, f))]
 
     for file in files:
+
+        print("Se proceseaza factura {}\n\n".format(file))
         file_path = path + file
         data = {'data': getData(file_path), 'token' : 'admin'}
         r = requests.post(url, data=json.dumps(data), headers=headers)
         if r.status_code != 200:
             print("Eroare de procesare, contactati-ma!")
         else:
-            print("Factura trimisa cu succes!")
+            print("\n\nFactura trimisa cu succes!")
         time.sleep(10)
         time_str = getCurrentTime()
         os.replace(file_path, destination_path + time_str + '.pdf')
